@@ -1,0 +1,66 @@
+# Dockerfile.proxyv2_wazuh
+#
+# Check out Istio proxy official image builds.
+# * https://hub.docker.com/r/istio/proxyv2
+# * https://github.com/istio/istio/blob/master/pilot/docker/Dockerfile.proxyv2
+#
+# IMPORTANT: To install the wazuh-agent we need APT (debian/ubuntu) or YUM/RPM.
+# See: https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh_agent_package_linux.html
+#
+# We need an istio/proxyv2 base image with APT. Therefore we do not choose the
+# "istio/proxyv2:1.X.Y-distroless" image but we use the debian-based one which
+# name is "istio/proxyv2:1.X.Y".
+# Be carreful not to use the distroless version.
+#
+# You can see the details behind istio ubuntu base image and distroless image
+# here:
+# https://github.com/istio/istio/blob/1.11.2/docker/Dockerfile.base
+#
+# TODO: Anwer 'can we install a wazuh agent on a distroless-based image?'
+FROM docker.io/istio/proxyv2:1.11.2
+# Alternate
+# ARG ISTIO_VERSION=latest
+# FROM docker.io/istio/proxyv2:${ISTIO_VERSION}
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Labels
+# LABEL <key>=<value> <key>=<value> ...
+LABEL name="istio-proxyv2-wazuh-agent"
+LABEL version="0.1"
+LABEL description="This image is based on the istio-proxyv2 image from \
+https://hub.docker.com/r/istio/proxyv2. The image is pulled \
+from docker.io/istio/proxyv2:1.11.2.\
+The purpose of this image is to build an istio/proxyv2 \
+image with a wazuh-agent that is installed (embedded) in \
+this modified istio/proxyv2 image.\
+"
+
+# The istio official base image uses user istio-proxy (1337).
+# See: https://github.com/istio/istio/blob/1.11.2/docker/Dockerfile.base
+USER istio-proxy:istio-proxy
+
+# Install the wazuh-agent.
+# The installation is inspired by:
+# * https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh_agent_package_linux.html
+# * https://github.com/noenv/docker-wazuh-agent
+RUN apt-get update
+RUN apt-get install -y
+# Install the wazuh repo GPG key:
+RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
+# Add the repository:
+RUN echo "deb https://packages.wazuh.com/4.x/apt/ stable main" | tee -a /etc/apt/sources.list.d/wazuh.list
+RUN apt-get update
+# Install wazuh-agent
+RUN apt-get install -y wazuh-agent
+RUN rm -rf /var/lib/apt/lists/*
+
+
+# Prepare wazuh-agent configuration file
+# TODO: find a way to customize the Wazuh manager IP address or hostname
+COPY ossec.conf /var/ossec/etc/
+
+
+# The new entrypoint script both starts the istio-proxy and the wazuh-agent
+# See https://github.com/istio/istio/blob/master/pilot/docker/Dockerfile.proxyv2
+ENTRYPOINT ["entrypoint.sh"]

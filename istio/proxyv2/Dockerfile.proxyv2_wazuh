@@ -63,4 +63,6 @@ COPY ossec.conf /var/ossec/etc/
 
 # The new entrypoint script both starts the istio-proxy and the wazuh-agent
 # See https://github.com/istio/istio/blob/master/pilot/docker/Dockerfile.proxyv2
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["entrypoint.sh"]

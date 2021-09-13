@@ -36,16 +36,13 @@ image with a wazuh-agent that is installed (embedded) in \
 this modified istio/proxyv2 image.\
 "
 
-# The istio official base image uses user istio-proxy (1337).
-# See: https://github.com/istio/istio/blob/1.11.2/docker/Dockerfile.base
-USER istio-proxy:istio-proxy
 
 # Install the wazuh-agent.
 # The installation is inspired by:
 # * https://documentation.wazuh.com/current/installation-guide/wazuh-agent/wazuh_agent_package_linux.html
 # * https://github.com/noenv/docker-wazuh-agent
 RUN apt-get update
-RUN apt-get install -y
+RUN apt-get install -y gnupg2
 # Install the wazuh repo GPG key:
 RUN curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | apt-key add -
 # Add the repository:
@@ -55,6 +52,9 @@ RUN apt-get update
 RUN apt-get install -y wazuh-agent
 RUN rm -rf /var/lib/apt/lists/*
 
+# The istio official base image uses user istio-proxy (1337).
+# See: https://github.com/istio/istio/blob/1.11.2/docker/Dockerfile.base
+USER istio-proxy:istio-proxy
 
 # Prepare wazuh-agent configuration file
 # TODO: find a way to customize the Wazuh manager IP address or hostname

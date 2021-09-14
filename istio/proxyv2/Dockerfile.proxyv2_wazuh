@@ -55,7 +55,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # Prepare wazuh-agent configuration file
 # TODO: find a way to customize the Wazuh manager IP address or hostname
-COPY ossec.conf /var/ossec/etc/
+COPY ossec.conf /var/ossec/etc/ossec.conf
 
 
 # The new entrypoint script both starts the istio-proxy and the wazuh-agent

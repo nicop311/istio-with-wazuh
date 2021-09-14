@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # The pilot-agent will bootstrap Envoy.
-/usr/local/bin/pilot-agent
+/usr/local/bin/pilot-agent wait
 
 # Start the wazuh-agent
 /var/ossec/bin/ossec-control start
